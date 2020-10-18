@@ -108,6 +108,7 @@ void register_user(client_info &cl)
 		send(cl.sockfd, message, strlen(message), 0);
 		len = recv(cl.sockfd, msg, 500, 0);
 		msg[len] = '\0';
+		strtok(msg, "\n");
 		user_id = msg;
 		std::cout << user_id << std::endl;
 		memset(msg, '\0', sizeof(msg));
@@ -115,6 +116,7 @@ void register_user(client_info &cl)
 		send(cl.sockfd, message, strlen(message), 0);
 		len = recv(cl.sockfd, msg, 500, 0);
 		msg[len] = '\0';
+		strtok(msg, "\n");
 		password = msg;
 		std::cout << password << std::endl;
 		if (is_user_logged_in(user_id, password))
@@ -123,12 +125,13 @@ void register_user(client_info &cl)
 			send(cl.sockfd, message, strlen(message), 0);
 			continue;
 		}
-		bool is_registered = true;
-		if (is_registered)
+		bool is_registered = dboperationobj.login_user(user_id, password);
+		if (!is_registered)
 		{
 			cl.user_id = user_id;
 			cl.password = password;
 			cl.login_status = true;
+			dboperationobj.register_user(user_id, password);
 			online_user.push_back(cl);
 			flag = false;
 			strcpy(message, "6");
@@ -158,6 +161,7 @@ void login_user(client_info &cl)
 		send(cl.sockfd, message, strlen(message), 0);
 		len = recv(cl.sockfd, msg, 500, 0);
 		msg[len] = '\0';
+		strtok(msg, "\n");
 		user_id = msg;
 		std::cout << user_id << std::endl;
 		memset(msg, '\0', sizeof(msg));
@@ -165,6 +169,7 @@ void login_user(client_info &cl)
 		send(cl.sockfd, message, strlen(message), 0);
 		len = recv(cl.sockfd, msg, 500, 0);
 		msg[len] = '\0';
+		strtok(msg, "\n");
 		password = msg;
 		std::cout << password << std::endl;
 		if (is_user_logged_in(user_id, password))
@@ -174,7 +179,7 @@ void login_user(client_info &cl)
 			continue;
 		}
 		std::cout << "               " << std::endl;
-		bool is_user_registered = check_authentication(user_id, password);
+		bool is_user_registered = dboperationobj.login_user(user_id, password);  //check_authentication(user_id, password);
 		std::cout << "             " << std::endl;
 		if (is_user_registered)
 		{

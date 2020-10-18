@@ -25,13 +25,13 @@ class dboperation
   mongocxx::client client{mongocxx::uri{}};
 
 public:
-  void register_Person(std::string userName, std::string password);
+  void register_user(std::string userName, std::string password);
   bool view_record(std::string userName);
   void delete_user(std::string name);
   bool login_user(std::string userName, std::string password);
 };
 
-void dboperation::register_Person(std::string userName, std::string password)
+void dboperation::register_user(std::string userName, std::string password)
 {
   mongocxx::database db = client["chat_db"];
 
@@ -64,23 +64,19 @@ void dboperation::register_Person(std::string userName, std::string password)
 
 bool dboperation::login_user(std::string userName, std::string password)
 {
-  std::cout << "check1";
   mongocxx::database db = client["chat_db"];
 
   mongocxx::collection crud_operation = db["user_data"];
-  std::cout << "check2";
   bsoncxx::stdx::optional<bsoncxx::document::value> maybe_result =
       crud_operation.find_one(document{} << "UserName"
 
                                          << userName
                                          << "Password"
                                          << password << finalize);
-  std:: cout<< "check3";
   if (maybe_result)
   {
     return true;
   }
-  std::cout << "authentication failed";
   return false;
 }
 
@@ -110,22 +106,3 @@ void dboperation::delete_user(std::string userName)
       collection.delete_many(
           document{} << "UserName" << open_document << "$eq" << userName << close_document << finalize);
 }
-
-// int main()
-// {
-//   dboperation dataObj;
-//   dataObj.register_Person("kajal", "kajal12456");
-//   dataObj.register_Person("kajal", "kajal12456");
-//   dataObj.register_Person("sandeep", "sandeep12456");
-//   dataObj.view_record("kajal");
-//   std::string user_name;
-//   std::string password;
-//   std::cout << "Enter the user Name";
-//   std::cin >> user_name;
-//   std::cout << "Enter the Password";
-//   std::cin >> password;
-//   dataObj.login_user(user_name, password);
-//   //dataObj.delete_user("kajal");
-//   //dataObj.view_record("kajal");
-//   return 0;
-// }
