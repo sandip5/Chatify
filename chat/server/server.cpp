@@ -173,7 +173,7 @@ void login_user(client_info &cl)
 			send(cl.sockfd, message, strlen(message), 0);
 			continue;
 		}
-		bool is_user_registered = true;
+		bool is_user_registered = dboperationobj.login_user(user_id, password);
 		if (is_user_registered)
 		{
 			cl.user_id = user_id;
