@@ -68,7 +68,7 @@ void display_dashboard(client_info &cl)
 	while (flag)
 	{
 		memset(msg, '\0', sizeof(msg));
-		strcpy(message, "Welcome To Chat Application\n1. Register\n2. Login\n3. Exit\nEnter  : ");
+		strcpy(message, "\nWelcome To Chat Application\n1. Register\n2. Login\n3. Exit\nEnter  : ");
 		send(cl.sockfd, message, strlen(message), 0);
 		memset(msg, '\0', sizeof(msg));
 		len = recv(cl.sockfd, msg, 500, 0);
@@ -181,8 +181,16 @@ void login_user(client_info &cl)
 			cl.login_status = true;
 			online_user.push_back(cl);
 			flag = false;
-			strcpy(message, "6");
+			strcpy(message, "1");
 			send(cl.sockfd, message, strlen(message), 0);
+			sleep(1);
+			char greet[35];
+			char name[12];
+			strcpy(greet, "Welcome, ");
+			strcpy(name, cl.user_id.c_str());
+			// strcat(name, "\n");
+			strcat(greet, name);
+			send(cl.sockfd, greet, strlen(greet), 0);
 		}
 		else
 		{

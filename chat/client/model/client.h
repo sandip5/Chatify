@@ -80,22 +80,26 @@ void server_response_handler()
 		case invalid_id_password:
 		{
 			std::cout << "\nInvalid UserId or Password" << std::endl;
+			continue;
 		}
 		break;
 		case exit_client:
 		{
 			std::cout << "\nThank You!!!" << std::endl;
 			flag = false;
+			continue;
 		}
 		break;
 		case already_registered:
 		{
 			std::cout << "\nUser Is Already Registered. Try With Different User Id..." << std::endl;
+			continue;
 		}
 		break;
 		case already_logged_in:
 		{
 			std::cout << "\nUser Is Already Logged In. Try Again..." << std::endl;
+			continue;
 		}
 		break;
 		case registered_successfully:
@@ -108,6 +112,7 @@ void server_response_handler()
 		case already_registered_logged_in:
 		{
 			std::cout << "\nUser Is Already Registered And Logged In. Try Again..." << std::endl;
+			continue;
 		}
 		}
 
@@ -144,10 +149,29 @@ void *recv_msg(void *sock)
 	int client_sock = *((int *)sock);
 	char msg[500];
 	int len;
+	int count = 0;
 	while ((len = recv(client_sock, msg, 500, 0)) > 0)
 	{
+		count++;
+		std::cout << "\n----------------------------CHAT MENU-------------------------------\n"
+				  << "| 1. Online Users[##] 2. Single Chat[@@UserID] 3. Chat With All[$$]|\n"
+				  << "-------------------------------ENTER--------------------------------\n\n";
 		msg[len] = '\0';
 		fputs(msg, stdout);
+		if (count == 1)
+		{
+			char *p;
+			p = strtok(msg, " ");
+			while (sizeof(msg))
+			{
+				if (p)
+				{
+					printf("%s\n", p);
+				}
+				p = strtok(NULL, ",");
+			}
+		}
+		std::cout << count << std::endl;
 		memset(msg, '\0', sizeof(msg));
 	}
 }
