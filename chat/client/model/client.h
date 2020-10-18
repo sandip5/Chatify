@@ -17,6 +17,8 @@
 #define registered_successfully '6'
 #define already_registered_logged_in '7'
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 struct sockaddr_in their_addr;
 int my_sock;
 int client_sock;
@@ -28,6 +30,8 @@ char username[100];
 char res[600];
 char ip[INET_ADDRSTRLEN];
 int len;
+char enter_command[12];
+char name[12];
 
 int connect_client_to_server();
 
@@ -72,7 +76,14 @@ void server_response_handler()
 		{
 		case logged_in_successfully:
 		{
-			std::cout << "\nLogged In Successfully..." << std::endl;
+			std::cout << "\n\x1B[32mLogged In Successfully..." << std::endl;
+			memset(msg, '\0', sizeof(msg));
+			len = recv(my_sock, msg, 500, 0);
+			msg[len] = '\0';
+			strtok(msg, "\n");
+			strcpy(name, msg);
+			strcat(msg, ":~$ ");
+			strcpy(enter_command, msg);
 			start_chat();
 			flag = false;
 		}
@@ -128,8 +139,13 @@ void start_chat()
 	pthread_create(&recv_t, NULL, recv_msg, &my_sock);
 	while (fgets(msg, 500, stdin) > 0)
 	{
-		strcpy(res, username);
-		strcat(res, ">>");
+
+		std::cout << "\n\x1B[33m----------------------------CHAT MENU-------------------------------\n"
+				  << "| 1. Online Users[##] 2. Single Chat[@@UserID] 3. Chat With All[$$]|\n"
+				  << "-------------------------------ENTER--------------------------------\n\n\x1B[34m";
+		std::cout << enter_command;
+		strcpy(res, name);
+		strcat(res, ": ");
 		strcat(res, msg);
 		len = write(my_sock, res, strlen(res));
 		if (len < 0)
@@ -152,26 +168,8 @@ void *recv_msg(void *sock)
 	int count = 0;
 	while ((len = recv(client_sock, msg, 500, 0)) > 0)
 	{
-		count++;
-		std::cout << "\n----------------------------CHAT MENU-------------------------------\n"
-				  << "| 1. Online Users[##] 2. Single Chat[@@UserID] 3. Chat With All[$$]|\n"
-				  << "-------------------------------ENTER--------------------------------\n\n";
 		msg[len] = '\0';
 		fputs(msg, stdout);
-		if (count == 1)
-		{
-			char *p;
-			p = strtok(msg, " ");
-			while (sizeof(msg))
-			{
-				if (p)
-				{
-					printf("%s\n", p);
-				}
-				p = strtok(NULL, ",");
-			}
-		}
-		std::cout << count << std::endl;
 		memset(msg, '\0', sizeof(msg));
 	}
 }
