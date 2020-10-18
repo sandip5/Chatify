@@ -11,14 +11,14 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "../dbConnection/dboperation.h"
+// #include "../dbConnection/dboperation.h"
 
 #define port 8888
 #define register_client '1'
 #define login_client '2'
 #define exit_client '3'
 
-dboperation dboperationobj;
+// dboperation dboperationobj;
 
 int clients[100];
 int number_of_client = 0;
