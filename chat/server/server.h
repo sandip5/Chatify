@@ -64,3 +64,5 @@ bool check_authentication(std::string user_id, std::string password);
 void *recv_msg(void *sock);
 
 void send_msg_to_all(char *msg, int curr);
+
+void send_logged_user_name(client_info &cl);
