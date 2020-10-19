@@ -30,7 +30,6 @@ char username[100];
 char res[600];
 char ip[INET_ADDRSTRLEN];
 int len;
-char enter_command[12];
 char name[12];
 
 int connect_client_to_server();
@@ -40,6 +39,12 @@ void server_response_handler();
 void start_chat();
 
 void *recv_msg(void *sock);
+
+void save_user_name();
+
+void show_chat_menu();
+
+void format_sender();
 
 int connect_client_to_server()
 {
@@ -79,50 +84,51 @@ void server_response_handler()
 			std::cout << "\n\x1B[32mLogged In Successfully..." << std::endl;
 			memset(msg, '\0', sizeof(msg));
 			len = recv(my_sock, msg, 500, 0);
-			msg[len] = '\0';
-			strtok(msg, "\n");
-			strcpy(name, msg);
-			strcat(msg, ":~$ ");
-			strcpy(enter_command, msg);
+			save_user_name();
+			show_chat_menu();
 			start_chat();
 			flag = false;
 		}
 		break;
 		case invalid_id_password:
 		{
-			std::cout << "\nInvalid UserId or Password" << std::endl;
+			std::cout << "\n\033[1;31mInvalid UserId or Password" << std::endl;
 			continue;
 		}
 		break;
 		case exit_client:
 		{
-			std::cout << "\nThank You!!!" << std::endl;
+			std::cout << "\n\033[1;31mThank You!!!" << std::endl;
 			flag = false;
 			continue;
 		}
 		break;
 		case already_registered:
 		{
-			std::cout << "\nUser Is Already Registered. Try With Different User Id..." << std::endl;
+			std::cout << "\n\033[1;31mUser Is Already Registered. Try With Different User Id..." << std::endl;
 			continue;
 		}
 		break;
 		case already_logged_in:
 		{
-			std::cout << "\nUser Is Already Logged In. Try Again..." << std::endl;
+			std::cout << "\n\033[1;31mUser Is Already Logged In. Try Again..." << std::endl;
 			continue;
 		}
 		break;
 		case registered_successfully:
 		{
-			std::cout << "\nRegistered Successfully And Logged In..." << std::endl;
+			std::cout << "\n\x1B[32mRegistered Successfully And Logged In..." << std::endl;
+			memset(msg, '\0', sizeof(msg));
+			len = recv(my_sock, msg, 500, 0);
+			save_user_name();
+			show_chat_menu();
 			start_chat();
 			flag = false;
 		}
 		break;
 		case already_registered_logged_in:
 		{
-			std::cout << "\nUser Is Already Registered And Logged In. Try Again..." << std::endl;
+			std::cout << "\n\033[1;31mUser Is Already Registered And Logged In. Try Again..." << std::endl;
 			continue;
 		}
 		}
@@ -139,14 +145,7 @@ void start_chat()
 	pthread_create(&recv_t, NULL, recv_msg, &my_sock);
 	while (fgets(msg, 500, stdin) > 0)
 	{
-
-		std::cout << "\n\x1B[33m----------------------------CHAT MENU-------------------------------\n"
-				  << "| 1. Online Users[##] 2. Single Chat[@@UserID] 3. Chat With All[$$]|\n"
-				  << "-------------------------------ENTER--------------------------------\n\n\x1B[34m";
-		std::cout << enter_command;
-		strcpy(res, name);
-		strcat(res, ": ");
-		strcat(res, msg);
+		format_sender();
 		len = write(my_sock, res, strlen(res));
 		if (len < 0)
 		{
@@ -172,4 +171,25 @@ void *recv_msg(void *sock)
 		fputs(msg, stdout);
 		memset(msg, '\0', sizeof(msg));
 	}
+}
+
+void save_user_name()
+{
+	strcpy(name, msg);
+}
+
+void show_chat_menu()
+{
+
+	std::cout << "\nWelcome To Chatify, " << name << std::endl;
+	std::cout << "\n\x1B[33m----------------------------CHAT MENU-------------------------------\n"
+				  << "| 1. Online Users[##] 2. Single Chat[@@UserID] 3. Chat With All[$$]|\n"
+				  << "-------------------------------ENTER--------------------------------\n\n\x1B[34m";
+}
+
+void format_sender()
+{
+	strcat(res, name);
+	strcat(res, " : ");
+	strcat(res, msg);
 }

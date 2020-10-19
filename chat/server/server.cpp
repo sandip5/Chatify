@@ -136,6 +136,8 @@ void register_user(client_info &cl)
 			flag = false;
 			strcpy(message, "6");
 			send(cl.sockfd, message, strlen(message), 0);
+			sleep(1);
+			send_logged_user_name(cl);
 		}
 		else
 		{
@@ -179,7 +181,7 @@ void login_user(client_info &cl)
 			continue;
 		}
 		std::cout << "               " << std::endl;
-		bool is_user_registered = dboperationobj.login_user(user_id, password);  //check_authentication(user_id, password);
+		bool is_user_registered = dboperationobj.login_user(user_id, password);
 		std::cout << "             " << std::endl;
 		if (is_user_registered)
 		{
@@ -191,13 +193,7 @@ void login_user(client_info &cl)
 			strcpy(message, "1");
 			send(cl.sockfd, message, strlen(message), 0);
 			sleep(1);
-			char greet[35];
-			char name[12];
-			strcpy(greet, "\x1B[33mWelcome, ");
-			strcpy(name, cl.user_id.c_str());
-			send(cl.sockfd, name, strlen(name), 0);
-			strcat(greet, name);
-			send(cl.sockfd, greet, strlen(greet), 0);
+			send_logged_user_name(cl);
 		}
 		else
 		{
@@ -218,17 +214,6 @@ bool is_user_logged_in(std::string userId, std::string password)
 	}
 
 	return false;
-}
-
-bool check_authentication(std::string user_id, std::string password)
-{
-	if ((user_id == "sandip" || user_id == "kajal") && password == "123456")
-	{
-		std::cout << "Check server 77";
-		return true;
-	}
-
-	return true;
 }
 
 void *recv_msg(void *sock)
@@ -280,4 +265,11 @@ void send_msg_to_all(char *msg, int curr)
 		}
 	}
 	pthread_mutex_unlock(&mutex);
+}
+
+void send_logged_user_name(client_info &cl)
+{
+	char name[12];
+	strcpy(name, cl.user_id.c_str());
+	send(cl.sockfd, name, strlen(name), 0);
 }
