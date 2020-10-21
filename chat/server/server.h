@@ -17,6 +17,9 @@
 #define register_client '1'
 #define login_client '2'
 #define exit_client '3'
+#define send_online_users_list "@online\n"
+#define send_msg_to_specific_user_id "@chat"
+#define send_msg_to_all_online_user "@all"
 
 dboperation dboperationobj;
 
@@ -31,6 +34,7 @@ pthread_t send_t, recv_t;
 char msg[500];
 int len;
 char ip[INET_ADDRSTRLEN];
+char list_of_online_user[500];
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -59,10 +63,16 @@ void login_user(client_info &cl);
 
 bool is_user_logged_in(std::string userId, std::string password);
 
-bool check_authentication(std::string user_id, std::string password);
+void *client_handler(void *sock);
 
-void *recv_msg(void *sock);
-
-void send_msg_to_all(char *msg, int curr);
+void send_msg_to_all(std::string, char *, int);
 
 void send_logged_user_name(client_info &cl);
+
+void send_msg_to_one(std::string, char *, std::string);
+
+void command_identifier(char *msg, int curr);
+
+std::vector<std::string> recvd_msg_splitter(const std::string &client_response, std::string delimiter);
+
+void make_online_user_list();
