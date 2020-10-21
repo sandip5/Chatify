@@ -53,8 +53,7 @@ void start_chat_system()
 	strcpy(cl.ip, ip);
 	clients[number_of_client] = client_sock;
 	number_of_client++;
-	display_dashboard(cl);
-	pthread_create(&recv_t, NULL, recv_msg, &cl);
+	pthread_create(&recv_t, NULL, client_handler, &cl);
 	pthread_mutex_unlock(&mutex);
 }
 
@@ -216,18 +215,19 @@ bool is_user_logged_in(std::string userId, std::string password)
 	return false;
 }
 
-void *recv_msg(void *sock)
+void *client_handler(void *sock)
 {
 	struct client_info cl = *((struct client_info *)sock);
 	char msg[500];
 	int len;
 	int client_counter;
 	int manipulate_client_counter;
+	display_dashboard(cl);
 	while ((len = recv(cl.sockfd, msg, 500, 0)) > 0)
 	{
 		msg[len] = '\0';
 		printf("%s", msg);
-		send_msg_to_all(msg, cl.sockfd);
+		command_identifier(msg, cl.sockfd);
 		memset(msg, '\0', sizeof(msg));
 	}
 	pthread_mutex_lock(&mutex);
@@ -249,19 +249,66 @@ void *recv_msg(void *sock)
 	pthread_mutex_unlock(&mutex);
 }
 
-void send_msg_to_all(char *msg, int curr)
+void command_identifier(char *msg, int curr)
+{
+	std::vector<std::string> splitted_message;
+	splitted_message = recvd_msg_splitter(msg, " ");
+
+	if (splitted_message[1] == send_online_users_list)
+	{
+		make_online_user_list();
+		sleep(1);
+		send(curr, list_of_online_user, strlen(list_of_online_user), 0);
+	}
+	else if (splitted_message[1] == send_msg_to_specific_user_id)
+	{
+		int word_counter = 0;
+		char concat_msg[500];
+		strcpy(concat_msg, " ");
+		for (auto itr : splitted_message)
+		{
+			if (word_counter > 2)
+			{
+				strcat(concat_msg, itr.c_str());
+				strcat(concat_msg, " ");
+			}
+			word_counter++;
+		}
+		sleep(1);
+		send_msg_to_one(splitted_message[0], concat_msg, splitted_message[2]);
+	}
+	else if (splitted_message[1] == send_msg_to_all_online_user)
+	{
+		int word_counter = 0;
+		char concat_msg[500];
+		strcpy(concat_msg, " ");
+		for (auto itr : splitted_message)
+		{
+			if (word_counter > 1)
+			{
+				strcat(concat_msg, itr.c_str());
+				strcat(concat_msg, " ");
+			}
+			word_counter++;
+		}
+		sleep(1);
+		send_msg_to_all(splitted_message[0], concat_msg, curr);
+	}
+	else
+	{
+		send(curr, "Enter Message With Correct Commands\n", strlen("Enter Message With Correct Commands\n"), 0);
+	}
+}
+
+void send_msg_to_all(std::string sender, char *message, int curr)
 {
 	int i;
 	pthread_mutex_lock(&mutex);
-	for (i = 0; i < number_of_client; i++)
+	for (auto itr : online_user)
 	{
-		if (clients[i] != curr)
+		if (itr.sockfd != curr)
 		{
-			if (send(clients[i], msg, strlen(msg), 0) < 0)
-			{
-				perror("sending failure");
-				continue;
-			}
+			send(itr.sockfd, (sender + message).c_str(), (sender + message).size(), 0);
 		}
 	}
 	pthread_mutex_unlock(&mutex);
@@ -272,4 +319,46 @@ void send_logged_user_name(client_info &cl)
 	char name[12];
 	strcpy(name, cl.user_id.c_str());
 	send(cl.sockfd, name, strlen(name), 0);
+}
+
+void send_msg_to_one(std::string sender, char *msg, std::string user_id)
+{
+	pthread_mutex_lock(&mutex);
+	for (auto itr : online_user)
+	{
+		if (itr.user_id == user_id)
+		{
+			send(itr.sockfd, (sender + msg).c_str(), (sender + msg).size(), 0);
+			break;
+		}
+	}
+	pthread_mutex_unlock(&mutex);
+}
+
+std::vector<std::string> recvd_msg_splitter(const std::string &client_response, std::string delimiter)
+{
+	size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+	std::string token;
+	std::vector<std::string> result;
+
+	while ((pos_end = client_response.find(delimiter, pos_start)) != std::string::npos)
+	{
+		token = client_response.substr(pos_start, pos_end - pos_start);
+		pos_start = pos_end + delim_len;
+		result.push_back(token);
+	}
+	result.push_back(client_response.substr(pos_start));
+	return result;
+}
+
+void make_online_user_list()
+{
+	strcpy(list_of_online_user, "\x1B[32mOnline Available Users\n");
+
+	for (auto itr : online_user)
+	{
+		strcat(list_of_online_user, itr.user_id.c_str());
+		strcat(list_of_online_user, "\n");
+	}
+	strcat(list_of_online_user, "\x1B[34m");
 }
