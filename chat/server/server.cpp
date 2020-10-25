@@ -124,13 +124,13 @@ void register_user(client_info &cl)
 			send(cl.sockfd, message, strlen(message), 0);
 			continue;
 		}
-		bool is_registered = dboperationobj.login_user(user_id, password);
+		bool is_registered = db_operation_obj.login_user(user_id, password);
 		if (!is_registered)
 		{
 			cl.user_id = user_id;
 			cl.password = password;
 			cl.login_status = true;
-			dboperationobj.register_user(user_id, password);
+			db_operation_obj.register_user(user_id, password);
 			online_user.push_back(cl);
 			flag = false;
 			strcpy(message, "6");
@@ -180,7 +180,7 @@ void login_user(client_info &cl)
 			continue;
 		}
 		std::cout << "               " << std::endl;
-		bool is_user_registered = dboperationobj.login_user(user_id, password);
+		bool is_user_registered = db_operation_obj.login_user(user_id, password);
 		std::cout << "             " << std::endl;
 		if (is_user_registered)
 		{
