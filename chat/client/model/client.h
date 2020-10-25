@@ -181,6 +181,7 @@ void show_chat_menu()
 	std::cout << "\nWelcome To Chatify, " << name << std::endl;
 	std::cout << "\n\x1B[33m------------CHAT MENU-------------\n"
 			  << "|Online Users[@online]           |\n|Single Chat[@chat user_id msg]  |\n|Chat With All[@all msg]         |\n"
+			  << "|Chat History[@history user_id]  |\n"
 			  << "--------------ENTER---------------\n\n\x1B[34m";
 }
 

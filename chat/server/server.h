@@ -20,8 +20,9 @@
 #define send_online_users_list "@online\n"
 #define send_msg_to_specific_user_id "@chat"
 #define send_msg_to_all_online_user "@all"
+#define chat_history "@history"
 
-dboperation db_operation_obj;
+db_operation db_operation_obj;
 
 int clients[100];
 int number_of_client = 0;
@@ -76,3 +77,5 @@ void command_identifier(char *msg, int curr);
 std::vector<std::string> recvd_msg_splitter(const std::string &client_response, std::string delimiter);
 
 void make_online_user_list();
+
+std::string load_chat_history(std::string sender, std::string receiver);
