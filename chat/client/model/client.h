@@ -1,4 +1,3 @@
-#pragma once
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -16,8 +15,6 @@
 #define already_logged_in '5'
 #define registered_successfully '6'
 #define already_registered_logged_in '7'
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct sockaddr_in their_addr;
 int my_sock;
@@ -38,7 +35,7 @@ void server_response_handler();
 
 void start_chat();
 
-void *recv_msg(void *sock);
+void *client_handler(void *sock);
 
 void save_user_name();
 
@@ -142,7 +139,7 @@ void server_response_handler()
 
 void start_chat()
 {
-	pthread_create(&recv_t, NULL, recv_msg, &my_sock);
+	pthread_create(&recv_t, NULL, client_handler, &my_sock);
 	while (fgets(msg, 500, stdin) > 0)
 	{
 		format_sender();
@@ -159,7 +156,7 @@ void start_chat()
 	close(my_sock);
 }
 
-void *recv_msg(void *sock)
+void *client_handler(void *sock)
 {
 	int client_sock = *((int *)sock);
 	char msg[500];
@@ -182,14 +179,14 @@ void show_chat_menu()
 {
 
 	std::cout << "\nWelcome To Chatify, " << name << std::endl;
-	std::cout << "\n\x1B[33m----------------------------CHAT MENU-------------------------------\n"
-				  << "| 1. Online Users[##] 2. Single Chat[@@UserID] 3. Chat With All[$$]|\n"
-				  << "-------------------------------ENTER--------------------------------\n\n\x1B[34m";
+	std::cout << "\n\x1B[33m------------CHAT MENU-------------\n"
+			  << "|Online Users[@online]           |\n|Single Chat[@chat user_id msg]  |\n|Chat With All[@all msg]         |\n"
+			  << "--------------ENTER---------------\n\n\x1B[34m";
 }
 
 void format_sender()
 {
 	strcat(res, name);
-	strcat(res, " : ");
+	strcat(res, ": ");
 	strcat(res, msg);
 }
