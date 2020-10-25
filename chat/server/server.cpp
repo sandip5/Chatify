@@ -247,6 +247,8 @@ void *client_handler(void *sock)
 	}
 	number_of_client--;
 	pthread_mutex_unlock(&mutex);
+
+	return 0;
 }
 
 void command_identifier(char *msg, int curr)
@@ -274,6 +276,7 @@ void command_identifier(char *msg, int curr)
 			}
 			word_counter++;
 		}
+		concat_msg[strlen(concat_msg) - 1] = '\0';
 		sleep(1);
 		send_msg_to_one(splitted_message[0], concat_msg, splitted_message[2]);
 	}
@@ -291,8 +294,14 @@ void command_identifier(char *msg, int curr)
 			}
 			word_counter++;
 		}
+		concat_msg[strlen(concat_msg) - 1] = '\0';
 		sleep(1);
 		send_msg_to_all(splitted_message[0], concat_msg, curr);
+	}
+	else if(splitted_message[1] == chat_history)
+	{
+		std::string chat_message = load_chat_history(splitted_message[0], splitted_message[2]);
+		send(curr, chat_message.c_str(), chat_message.size(), 0);
 	}
 	else
 	{
@@ -328,6 +337,7 @@ void send_msg_to_one(std::string sender, char *msg, std::string user_id)
 	{
 		if (itr.user_id == user_id)
 		{
+			db_operation_obj.save_chats_of_user(sender, user_id, (sender + msg));
 			send(itr.sockfd, (sender + msg).c_str(), (sender + msg).size(), 0);
 			break;
 		}
@@ -361,4 +371,16 @@ void make_online_user_list()
 		strcat(list_of_online_user, "\n");
 	}
 	strcat(list_of_online_user, "\x1B[34m");
+}
+
+std::string load_chat_history(std::string sender, std::string receiver)
+{
+	std::vector<std::string> messageDetails = db_operation_obj.get_saved_chats(sender, receiver);
+	std::string message = "\n\x1B[33m=======Chat History=======\n";	
+	for (std::string msg : messageDetails)
+	{
+		message += msg;
+	}
+
+	return (message + "=========================\n\x1B[34m");
 }
