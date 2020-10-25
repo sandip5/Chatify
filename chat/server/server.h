@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "../dbConnection/dboperation.h"
+#include "../dbConnection/db_operation.h"
 
 #define port 8888
 #define register_client '1'
@@ -21,7 +21,7 @@
 #define send_msg_to_specific_user_id "@chat"
 #define send_msg_to_all_online_user "@all"
 
-dboperation dboperationobj;
+dboperation db_operation_obj;
 
 int clients[100];
 int number_of_client = 0;
